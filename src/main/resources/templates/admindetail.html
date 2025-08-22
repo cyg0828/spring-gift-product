@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>상품 상세</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        .wrap { max-width: 720px; margin: 0 auto; }
+        .card { border:1px solid #eee; border-radius:12px; padding:24px; }
+        .row { display:flex; gap:16px; margin:8px 0; }
+        .label { width:110px; color:#666; }
+        .value { flex:1; font-weight:600; }
+        .thumb { width:160px; height:160px; object-fit:cover; border:1px solid #eee; border-radius:12px; }
+        .actions { display:flex; gap:8px; margin-top:16px; }
+        .btn { padding:10px 14px; border-radius:8px; border:1px solid #ddd; text-decoration:none; }
+        .primary { background:#111; color:#fff; border-color:#111; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>상품 상세</h1>
+
+    <div class="card" th:if="${p != null}">
+        <div class="row"><div class="label">ID</div><div class="value" th:text="${p.id}">1</div></div>
+        <div class="row"><div class="label">상품명</div><div class="value" th:text="${p.name}">예시</div></div>
+        <div class="row"><div class="label">가격</div>
+            <div class="value" th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')}">1,000</div>
+        </div>
+
+        <div class="row" th:if="${p.imageUrl}">
+            <div class="label">이미지</div>
+            <div class="value"><img class="thumb" th:src="${p.imageUrl}" alt="thumbnail"/></div>
+        </div>
+
+        <div class="actions">
+            <a class="btn" th:href="@{/api/admin}">목록</a>
+            <a class="btn primary" th:href="@{|/api/admin/${p.id}/edit|}">수정</a>
+
+            <!-- 삭제: POST /api/admin/{id}/delete -->
+            <form th:action="@{|/api/admin/${p.id}/delete|}" method="post"
+                  onsubmit="return confirm('정말 삭제하시겠어요?');">
+                <input type="hidden" th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button class="btn" type="submit">삭제</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${p != null} ? '상품 수정' : '상품 등록'">상품 폼</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; max-width: 720px; }
+        .field { margin-bottom: 12px; }
+        label { display:block; margin-bottom: 6px; font-weight: 600; }
+        input { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; }
+        .row { display:flex; gap:8px; align-items:center; }
+        .btn { padding:10px 14px; border-radius:8px; border:1px solid #ddd; text-decoration:none; }
+        .primary { background:#111; color:#fff; border-color:#111; }
+    </style>
+</head>
+<body>
+<h1 th:text="${p != null} ? '상품 수정' : '상품 등록'">상품 폼</h1>
+
+<!-- 생성: POST /products  |  수정: POST /products/{id} -->
+<form th:action="${p != null} ? @{'/api/admin/' + ${p.id}} : @{/api/admin}" method="post">
+    <!-- Spring Security 사용 시 CSRF -->
+    <input type="hidden" th:if="${_csrf != null}"
+           th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+    <div class="field">
+        <label for="name">상품명</label>
+        <input id="name" name="name" type="text"
+               th:value="${p != null} ? ${p.name} : ''" required />
+    </div>
+
+    <div class="field">
+        <label for="imageUrl">이미지 URL</label>
+        <input id="imageUrl" name="imageUrl" type="text"
+               th:value="${p != null} ? ${p.imageUrl} : ''" />
+    </div>
+
+    <div class="field">
+        <label for="price">가격</label>
+        <input id="price" name="price" type="number" min="0" step="1"
+               th:value="${p != null} ? ${p.price} : ''" required />
+    </div>
+
+    <div class="row">
+        <button class="btn primary" type="submit"
+                th:text="${p != null} ? '수정 저장' : '등록'">저장</button>
+        <a class="btn" th:href="@{/api/admin}">목록</a>
+    </div>
+</form>
+
+<!-- 수정 모드에서만 삭제 버튼 노출 (POST /products/{id}/delete) -->
+<form th:if="${p != null}" th:action="@{|/api/admin/${p.id}/delete|}" method="post"
+      onsubmit="return confirm('정말 삭제하시겠어요?');" style="margin-top:12px;">
+    <input type="hidden" th:if="${_csrf != null}"
+           th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <button class="btn" type="submit">삭제</button>
+</form>
+</body>
+</html>

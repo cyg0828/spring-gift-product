@@ -1,0 +1,78 @@
+<!-- src/main/resources/templates/products/list.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>상품 목록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
+        .wrap { max-width: 960px; margin: 0 auto; }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 8px; }
+        .btn { display:inline-block; padding:8px 12px; border-radius:8px; border:1px solid #ddd; text-decoration:none; }
+        .btn.primary { background:#222; color:#fff; border-color:#222; }
+        .table { width:100%; border-collapse: collapse; }
+        .table th, .table td { padding:10px 12px; border-bottom:1px solid #eee; text-align:left; }
+        .table th { background:#fafafa; font-weight:600; }
+        .thumb { width:56px; height:56px; object-fit:cover; border-radius:8px; border:1px solid #eee; }
+        .empty { padding:32px; text-align:center; color:#666; border:1px dashed #ddd; border-radius:12px; }
+        .actions { display:flex; gap:8px; }
+        form { margin:0; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="toolbar">
+        <h1>상품 목록</h1>
+        <a class="btn primary" th:href="@{/api/admin/new}">+ 상품 등록</a>
+    </div>
+
+    <!-- 비어있을 때 -->
+    <div class="empty" th:if="${#lists.isEmpty(products)}">
+        등록된 상품이 없습니다. <a th:href="@{/api/admin/new}">상품을 추가</a>해 보세요.
+    </div>
+
+    <!-- 목록 -->
+    <table class="table" th:if="${!#lists.isEmpty(products)}">
+        <thead>
+        <tr>
+            <th style="width:80px;">ID</th>
+            <th style="width:80px;">이미지</th>
+            <th>상품명</th>
+            <th style="width:140px;">가격</th>
+            <th style="width:180px;">액션</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${products}">
+            <td th:text="${p.id}">1</td>
+            <td>
+                <img class="thumb"
+                     th:if="${p.imageUrl}"
+                     th:src="${p.imageUrl}"
+                     alt="thumb" />
+            </td>
+            <td>
+                <a th:href="@{|/api/admin/${p.id}|}" th:text="${p.name}">상품명</a>
+            </td>
+            <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')}">1,000</td>
+            <td class="actions">
+                <a class="btn" th:href="@{|/api/admin/${p.id}|}">보기</a>
+                <a class="btn" th:href="@{|/api/admin/${p.id}/edit|}">수정</a>
+
+                <!-- 삭제: POST + _method=DELETE (HiddenHttpMethodFilter 필요) -->
+                <form th:action="@{|/api/admin/${p.id}/delete|}" method="post"
+                      onsubmit="return confirm('정말 삭제하시겠어요?');">
+                    <input type="hidden" name="_method" value="delete" />
+                    <!-- Spring Security 사용 시 CSRF 토큰 -->
+                    <input type="hidden" th:if="${_csrf != null}"
+                           th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button class="btn" type="submit">삭제</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
