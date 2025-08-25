@@ -2,7 +2,7 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
-    <title th:text="${p != null} ? '상품 수정' : '상품 등록'">상품 폼</title>
+    <title th:text="${id != null} ? '상품 수정' : '상품 등록'">상품 폼</title>
     <style>
         body { font-family: system-ui, sans-serif; margin: 24px; max-width: 720px; }
         .field { margin-bottom: 12px; }
@@ -11,44 +11,50 @@
         .row { display:flex; gap:8px; align-items:center; }
         .btn { padding:10px 14px; border-radius:8px; border:1px solid #ddd; text-decoration:none; }
         .primary { background:#111; color:#fff; border-color:#111; }
+        .error { color:#c00; font-size:0.9rem; margin-top:6px; }
+        .global-errors { color:#c00; margin-bottom:12px; }
     </style>
 </head>
 <body>
-<h1 th:text="${p != null} ? '상품 수정' : '상품 등록'">상품 폼</h1>
+<h1 th:text="${id != null} ? '상품 수정' : '상품 등록'">상품 폼</h1>
 
-<!-- 생성: POST /products  |  수정: POST /products/{id} -->
-<form th:action="${p != null} ? @{'/api/admin/' + ${p.id}} : @{/api/admin}" method="post">
-    <!-- Spring Security 사용 시 CSRF -->
+<form th:object="${productRequest}"
+      th:action="${id != null} ? @{'/api/admin/' + ${id}} : @{/api/admin}"
+      method="post">
+
     <input type="hidden" th:if="${_csrf != null}"
            th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
+    <div class="global-errors" th:if="${#fields.hasGlobalErrors()}">
+        <div th:each="e : ${#fields.globalErrors()}" th:text="${e}"></div>
+    </div>
+
     <div class="field">
         <label for="name">상품명</label>
-        <input id="name" name="name" type="text"
-               th:value="${p != null} ? ${p.name} : ''" required />
+        <input id="name" name="name" type="text" th:field="*{name}" required />
+        <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
     </div>
 
     <div class="field">
         <label for="imageUrl">이미지 URL</label>
-        <input id="imageUrl" name="imageUrl" type="text"
-               th:value="${p != null} ? ${p.imageUrl} : ''" />
+        <input id="imageUrl" name="imageUrl" type="text" th:field="*{imageUrl}" />
+        <div class="error" th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}"></div>
     </div>
 
     <div class="field">
         <label for="price">가격</label>
-        <input id="price" name="price" type="number" min="0" step="1"
-               th:value="${p != null} ? ${p.price} : ''" required />
+        <input id="price" name="price" type="number" min="0" step="1" th:field="*{price}" required />
+        <div class="error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
     </div>
 
     <div class="row">
         <button class="btn primary" type="submit"
-                th:text="${p != null} ? '수정 저장' : '등록'">저장</button>
+                th:text="${id != null} ? '수정 저장' : '등록'">저장</button>
         <a class="btn" th:href="@{/api/admin}">목록</a>
     </div>
 </form>
 
-<!-- 수정 모드에서만 삭제 버튼 노출 (POST /products/{id}/delete) -->
-<form th:if="${p != null}" th:action="@{|/api/admin/${p.id}/delete|}" method="post"
+<form th:if="${id != null}" th:action="@{|/api/admin/${id}/delete|}" method="post"
       onsubmit="return confirm('정말 삭제하시겠어요?');" style="margin-top:12px;">
     <input type="hidden" th:if="${_csrf != null}"
            th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />

@@ -4,7 +4,7 @@ public class Product {
     Long id;
     String name;
     String imageUrl;
-    long price;
+    Long price;
 
     public Product(Long id, String name, String imageUrl, long price) {
         this.id = id;
@@ -22,7 +22,7 @@ public class Product {
     public String getImageUrl() {
         return imageUrl;
     }
-    public long getPrice() {
+    public Long getPrice() {
         return price;
     }
 }

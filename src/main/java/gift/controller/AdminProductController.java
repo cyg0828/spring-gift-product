@@ -1,9 +1,12 @@
 package gift.controller;
 
 import gift.dto.ProductRequest;
+import gift.entity.Product;
 import gift.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -23,44 +26,46 @@ public class AdminProductController {
         return "adminlist";
     }
 
-    /** 생성 폼 */
     @GetMapping("/new")
     public String createForm() {
-        return "adminform"; // 비어있는 폼
+        return "adminform";
     }
 
-    /** 생성 처리 (POST /products) */
     @PostMapping
-    public String create(@RequestParam String name,
-                         @RequestParam(required = false) String imageUrl,
-                         @RequestParam long price,
+    public String create(@Valid @ModelAttribute ProductRequest form,
+                         BindingResult bindingResult,
                          RedirectAttributes ra) {
-        productService.addProduct(new ProductRequest(name, imageUrl, price));
+        if (bindingResult.hasErrors()) {
+            return "adminform";
+        }
+        productService.addProduct(form);
         ra.addFlashAttribute("message", "상품이 등록되었습니다.");
         return "redirect:/api/admin";
     }
 
-    /** 수정 폼 */
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
-        var p = productService.getOneProduct(id);             // 없으면 404 던지도록 구현
-        model.addAttribute("p", p);             // 폼에 초기값으로 사용
+        Product p = productService.getOneProduct(id);
+        model.addAttribute("productRequest", new ProductRequest(p.getName(), p.getImageUrl(), p.getPrice()));
+        model.addAttribute("id", p.getId());
         return "adminform";
     }
 
-    /** 수정 처리 (POST /products/{id}) — PUT 스푸핑 없이 간단히 */
     @PostMapping("/{id}")
     public String update(@PathVariable Long id,
-                         @RequestParam String name,
-                         @RequestParam(required = false) String imageUrl,
-                         @RequestParam long price,
+                         @Valid @ModelAttribute ProductRequest form,
+                         BindingResult bindingResult,
+                         Model model,
                          RedirectAttributes ra) {
-        productService.updateProduct(id, new gift.dto.ProductRequest(name, imageUrl, price));
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("id", id);
+            return "adminform";
+        }
+        productService.updateProduct(id, form);
         ra.addFlashAttribute("message", "상품이 수정되었습니다.");
         return "redirect:/api/admin";
     }
 
-    /** 삭제 처리 (POST /products/{id}/delete) — DELETE 스푸핑 없이 간단히 */
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         productService.deletProduct(id);
@@ -72,6 +77,6 @@ public class AdminProductController {
     public String detail(@PathVariable Long id, Model model) {
         var p = productService.getOneProduct(id); // 없으면 서비스에서 404 예외 던지도록
         model.addAttribute("p", p);
-        return "admindetail"; // templates/admindetail.html
+        return "admindetail";
     }
 }

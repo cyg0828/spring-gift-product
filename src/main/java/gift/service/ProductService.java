@@ -2,6 +2,7 @@ package gift.service;
 
 import gift.dto.ProductRequest;
 import gift.dto.ProductResponse;
+import gift.entity.Product;
 import gift.exception.ProductNotFoundException;
 import gift.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class ProductService {
         }
     }
 
-    public Object getOneProduct(Long id) {
+    public Product getOneProduct(Long id) {
         return productRepository.getOneProduct(id);
     }
 }
